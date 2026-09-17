@@ -1,0 +1,22 @@
+# Python / Django
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.egg-info/
+backend/db.sqlite3
+*.pyc
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Env
+.env

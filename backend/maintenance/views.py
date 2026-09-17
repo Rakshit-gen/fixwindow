@@ -1,3 +1,6 @@
+import csv
+
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -42,3 +45,23 @@ class SlaStatusView(APIView):
 class VendorScorecardView(APIView):
     def get(self, request):
         return Response(VendorScorecardSerializer(compute_vendor_scorecards(), many=True).data)
+
+
+class VendorScorecardCsvView(APIView):
+    """Downloadable copy of the vendor scorecards, for pasting into a lease renewal review."""
+
+    def get(self, request):
+        cards = compute_vendor_scorecards()
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="fixwindow_vendor_scorecards.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(
+            ["vendor_name", "resolved_count", "avg_response_hours", "avg_resolution_hours", "breach_rate"]
+        )
+        for c in cards:
+            writer.writerow(
+                [c.vendor_name, c.resolved_count, c.avg_response_hours, c.avg_resolution_hours, c.breach_rate]
+            )
+        return response

@@ -6,6 +6,7 @@ from .views import (
     PropertyViewSet,
     SlaStatusView,
     UnitViewSet,
+    VendorScorecardCsvView,
     VendorScorecardView,
     VendorViewSet,
 )
@@ -20,4 +21,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("sla-status/", SlaStatusView.as_view()),
     path("vendor-scorecards/", VendorScorecardView.as_view()),
+    path("vendor-scorecards/export/", VendorScorecardCsvView.as_view()),
 ]

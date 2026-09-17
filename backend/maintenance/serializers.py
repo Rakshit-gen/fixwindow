@@ -34,6 +34,13 @@ class MaintenanceRequestSerializer(serializers.ModelSerializer):
             "vendor", "vendor_name", "reported_at", "acknowledged_at", "resolved_at",
         ]
 
+    def validate(self, attrs):
+        reported_at = attrs.get("reported_at", getattr(self.instance, "reported_at", None))
+        resolved_at = attrs.get("resolved_at", getattr(self.instance, "resolved_at", None))
+        if reported_at and resolved_at and resolved_at < reported_at:
+            raise serializers.ValidationError("resolved_at cannot be before reported_at.")
+        return attrs
+
 
 class SlaStatusSerializer(serializers.Serializer):
     request_id = serializers.IntegerField()

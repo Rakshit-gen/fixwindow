@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from .models import Category, MaintenanceRequest, Property, Unit, Vendor
+from .serializers import MaintenanceRequestSerializer
 from .services import compute_sla_statuses, compute_vendor_scorecards
 
 
@@ -100,3 +101,29 @@ class ComputeVendorScorecardsTests(TestCase):
         )
         cards = compute_vendor_scorecards()
         self.assertEqual(cards[0].vendor_name, "Reliable Rae")
+
+
+class MaintenanceRequestSerializerTests(TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+        prop = Property.objects.create(name="Maple Duplex", address="1 Maple St")
+        self.unit = Unit.objects.create(property=prop, label="Unit A")
+
+    def test_resolved_at_before_reported_at_is_rejected(self):
+        serializer = MaintenanceRequestSerializer(data={
+            "unit": self.unit.id, "tenant_name": "Tam", "category": Category.ROUTINE,
+            "description": "leaky faucet",
+            "reported_at": self.now.isoformat(),
+            "resolved_at": (self.now - timedelta(hours=1)).isoformat(),
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_resolved_at_after_reported_at_is_accepted(self):
+        serializer = MaintenanceRequestSerializer(data={
+            "unit": self.unit.id, "tenant_name": "Tam", "category": Category.ROUTINE,
+            "description": "leaky faucet",
+            "reported_at": self.now.isoformat(),
+            "resolved_at": (self.now + timedelta(hours=1)).isoformat(),
+        })
+        self.assertTrue(serializer.is_valid(), serializer.errors)

@@ -51,3 +51,15 @@ export async function createRequest(payload: {
   });
   if (!res.ok) throw new Error(`Failed to create request: ${res.status}`);
 }
+
+async function patchRequest(requestId: number, field: "acknowledged_at" | "resolved_at"): Promise<void> {
+  const res = await fetch(`${API_BASE}/requests/${requestId}/`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ [field]: new Date().toISOString() }),
+  });
+  if (!res.ok) throw new Error(`Failed to update request: ${res.status}`);
+}
+
+export const acknowledgeRequest = (requestId: number) => patchRequest(requestId, "acknowledged_at");
+export const resolveRequest = (requestId: number) => patchRequest(requestId, "resolved_at");

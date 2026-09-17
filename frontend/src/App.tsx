@@ -4,6 +4,7 @@ import {
   fetchSlaStatuses,
   fetchVendorScorecards,
   resolveRequest,
+  vendorScorecardsExportUrl,
   type SlaStatus,
   type VendorScorecard,
 } from "./api";
@@ -87,6 +88,9 @@ export default function App() {
 
       <section>
         <h2>Vendor scorecards</h2>
+        <a className="export-link" href={vendorScorecardsExportUrl()}>
+          Export CSV
+        </a>
         {scorecards.length === 0 ? (
           <p className="empty">No vendors yet.</p>
         ) : (

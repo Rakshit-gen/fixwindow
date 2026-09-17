@@ -129,6 +129,13 @@ tr.status-at_risk {
   margin-bottom: 8px;
 }
 
+.export-link {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
 .actions {
   white-space: nowrap;
 }

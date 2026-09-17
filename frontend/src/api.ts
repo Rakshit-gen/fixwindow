@@ -33,6 +33,7 @@ async function getJson<T>(path: string): Promise<T> {
 
 export const fetchSlaStatuses = () => getJson<SlaStatus[]>("/sla-status/");
 export const fetchVendorScorecards = () => getJson<VendorScorecard[]>("/vendor-scorecards/");
+export const vendorScorecardsExportUrl = () => `${API_BASE}/vendor-scorecards/export/`;
 export const fetchUnits = () => getJson<{ results?: Unit[] } | Unit[]>("/units/").then(
   (data) => (Array.isArray(data) ? data : data.results ?? [])
 );

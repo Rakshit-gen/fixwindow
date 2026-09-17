@@ -129,6 +129,21 @@ tr.status-at_risk {
   margin-bottom: 8px;
 }
 
+.actions {
+  white-space: nowrap;
+}
+
+.actions button {
+  padding: 4px 8px;
+  margin-right: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .new-request button {
   padding: 8px 16px;
   border: none;

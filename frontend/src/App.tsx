@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchSlaStatuses, fetchVendorScorecards, type SlaStatus, type VendorScorecard } from "./api";
+import {
+  acknowledgeRequest,
+  fetchSlaStatuses,
+  fetchVendorScorecards,
+  resolveRequest,
+  type SlaStatus,
+  type VendorScorecard,
+} from "./api";
 import { NewRequestForm } from "./NewRequestForm";
 
 export default function App() {
@@ -19,6 +26,16 @@ export default function App() {
   useEffect(() => {
     reload();
   }, [reload]);
+
+  async function handleAcknowledge(requestId: number) {
+    await acknowledgeRequest(requestId);
+    reload();
+  }
+
+  async function handleResolve(requestId: number) {
+    await resolveRequest(requestId);
+    reload();
+  }
 
   return (
     <div className="app">
@@ -44,6 +61,7 @@ export default function App() {
                 <th>Category</th>
                 <th>Elapsed / SLA (hrs)</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -56,6 +74,10 @@ export default function App() {
                     {s.hours_elapsed} / {s.sla_hours}
                   </td>
                   <td>{s.status.replace("_", " ")}</td>
+                  <td className="actions">
+                    <button onClick={() => handleAcknowledge(s.request_id)}>Acknowledge</button>
+                    <button onClick={() => handleResolve(s.request_id)}>Resolve</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

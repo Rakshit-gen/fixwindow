@@ -1,122 +1,97 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useCallback, useEffect, useState } from "react";
+import { fetchSlaStatuses, fetchVendorScorecards, type SlaStatus, type VendorScorecard } from "./api";
+import { NewRequestForm } from "./NewRequestForm";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [statuses, setStatuses] = useState<SlaStatus[]>([]);
+  const [scorecards, setScorecards] = useState<VendorScorecard[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(() => {
+    Promise.all([fetchSlaStatuses(), fetchVendorScorecards()])
+      .then(([s, v]) => {
+        setStatuses(s);
+        setScorecards(v);
+      })
+      .catch((err) => setError(err.message));
+  }, []);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <div className="app">
+      <header>
+        <h1>fixwindow</h1>
+        <p>SLA clocks for open maintenance requests, and vendor response history.</p>
+      </header>
+
+      {error && <p className="error">{error}</p>}
+
+      <NewRequestForm onCreated={reload} />
+
+      <section>
+        <h2>Open requests</h2>
+        {statuses.length === 0 ? (
+          <p className="empty">No open requests. Everything's resolved.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Unit</th>
+                <th>Tenant</th>
+                <th>Category</th>
+                <th>Elapsed / SLA (hrs)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statuses.map((s) => (
+                <tr key={s.request_id} className={`status-${s.status}`}>
+                  <td>{s.unit}</td>
+                  <td>{s.tenant_name}</td>
+                  <td>{s.category}</td>
+                  <td>
+                    {s.hours_elapsed} / {s.sla_hours}
+                  </td>
+                  <td>{s.status.replace("_", " ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+      <section>
+        <h2>Vendor scorecards</h2>
+        {scorecards.length === 0 ? (
+          <p className="empty">No vendors yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Resolved</th>
+                <th>Avg response (hrs)</th>
+                <th>Avg resolution (hrs)</th>
+                <th>Breach rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scorecards.map((c) => (
+                <tr key={c.vendor_name}>
+                  <td>{c.vendor_name}</td>
+                  <td>{c.resolved_count}</td>
+                  <td>{c.avg_response_hours ?? "—"}</td>
+                  <td>{c.avg_resolution_hours ?? "—"}</td>
+                  <td>{c.breach_rate}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    </div>
+  );
 }
-
-export default App

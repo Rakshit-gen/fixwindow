@@ -36,9 +36,14 @@ class MaintenanceRequestSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         reported_at = attrs.get("reported_at", getattr(self.instance, "reported_at", None))
+        acknowledged_at = attrs.get("acknowledged_at", getattr(self.instance, "acknowledged_at", None))
         resolved_at = attrs.get("resolved_at", getattr(self.instance, "resolved_at", None))
         if reported_at and resolved_at and resolved_at < reported_at:
             raise serializers.ValidationError("resolved_at cannot be before reported_at.")
+        if reported_at and acknowledged_at and acknowledged_at < reported_at:
+            raise serializers.ValidationError("acknowledged_at cannot be before reported_at.")
+        if acknowledged_at and resolved_at and resolved_at < acknowledged_at:
+            raise serializers.ValidationError("resolved_at cannot be before acknowledged_at.")
         return attrs
 
 

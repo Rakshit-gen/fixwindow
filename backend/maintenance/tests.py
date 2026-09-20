@@ -127,3 +127,24 @@ class MaintenanceRequestSerializerTests(TestCase):
             "resolved_at": (self.now + timedelta(hours=1)).isoformat(),
         })
         self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_acknowledged_at_before_reported_at_is_rejected(self):
+        serializer = MaintenanceRequestSerializer(data={
+            "unit": self.unit.id, "tenant_name": "Tam", "category": Category.ROUTINE,
+            "description": "leaky faucet",
+            "reported_at": self.now.isoformat(),
+            "acknowledged_at": (self.now - timedelta(hours=1)).isoformat(),
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_resolved_at_before_acknowledged_at_is_rejected(self):
+        serializer = MaintenanceRequestSerializer(data={
+            "unit": self.unit.id, "tenant_name": "Tam", "category": Category.ROUTINE,
+            "description": "leaky faucet",
+            "reported_at": self.now.isoformat(),
+            "acknowledged_at": (self.now + timedelta(hours=2)).isoformat(),
+            "resolved_at": (self.now + timedelta(hours=1)).isoformat(),
+        })
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)
